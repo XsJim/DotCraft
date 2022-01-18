@@ -14,4 +14,7 @@
     <color name="deep_blue">#2983bb</color>
     <color name="green">#253d24</color>
     <color name="red">#cf4813</color>
+    <color name="yellow">#fecc11</color>
+    <color name="yellow_mid">#fcc307</color>
+    <color name="yellow_deep">#f9bd10</color>
 </resources>

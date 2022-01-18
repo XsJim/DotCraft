@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DotCraft</string>
+    <string name="restart_chinese">重开</string>
+    <string name="score_chinese">分数</string>
 </resources>

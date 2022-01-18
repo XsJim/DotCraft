@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#8abcd1"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:background="@drawable/shape_bg"
+        android:alpha="0.7"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
+
+        <ImageView
+            android:id="@+id/ring1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/shape_ring_blue" />
+
+        <ImageView
+            android:id="@+id/ring2"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring1"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring3"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring2"
+            android:background="@drawable/shape_ring_blue"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring4"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="10dp"
+            android:layout_below="@id/ring1"
+
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring5"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring1"
+            android:layout_below="@id/ring2"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring6"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring2"
+            android:layout_below="@id/ring3"
+
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+
+        <ImageView
+            android:id="@+id/ring7"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="10dp"
+            android:layout_below="@id/ring4"
+
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring8"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring1"
+            android:layout_below="@id/ring5"
+            android:background="@drawable/shape_ring_blue"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+
+        <ImageView
+            android:id="@+id/ring9"
+            android:layout_marginTop="45dp"
+            android:layout_marginStart="45dp"
+            android:layout_toEndOf="@id/ring2"
+            android:layout_below="@id/ring6"
+
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
+
+        <ImageView
+            android:id="@+id/dot1"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="25dp"
+            android:background="@drawable/shape_dot_blue"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/dot2"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot1"
+
+            android:background="@drawable/shape_dot_green"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black"
+            />
+
+        <ImageView
+            android:id="@+id/dot3"
+            android:layout_marginTop="25dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot2"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:background="@drawable/shape_dot_blue"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black"
+            />
+
+        <ImageView
+            android:id="@+id/dot4"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="25dp"
+            android:layout_below="@id/dot1"
+
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_dot_green"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/dot5"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot1"
+            android:layout_below="@id/dot2"
+
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/shape_dot_green"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/dot6"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot2"
+            android:layout_below="@id/dot3"
+
+            android:background="@drawable/shape_dot_green"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+
+        <ImageView
+            android:id="@+id/dot7"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="25dp"
+            android:layout_below="@id/dot4"
+
+            android:background="@drawable/shape_dot_green"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/dot8"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot1"
+            android:layout_below="@id/dot5"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:background="@drawable/shape_dot_blue"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
+            android:id="@+id/dot9"
+            android:layout_marginTop="65dp"
+            android:layout_marginStart="65dp"
+            android:layout_toEndOf="@id/dot2"
+            android:layout_below="@id/dot6"
+
+            android:background="@drawable/shape_dot_green"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+    </RelativeLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

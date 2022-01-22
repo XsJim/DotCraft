@@ -4,9 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
@@ -15,6 +18,35 @@ import java.util.List;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
+    // 手指不在点上
+    private static final int STATE_IDLE = 0;
+    // 手指在点上
+    private static final int STATE_WAITING_DRAG = 1;
+    // 手指在点上且水平拖动
+    private static final int STATE_HORIZONTAL_DRAG = 2;
+    // 手指在点上且垂直拖动
+    private static final int STATE_VERTICAL_DRAG = 3;
+    // 某些没有状态的情况
+    private static final int STATELESS = -1;
+
+    // 当前手指状态变量
+    private int state = STATE_IDLE;
+
+    // 最后记录的手指位置
+    private float prevMotionX;
+    private float prevMotionY;
+
+    private int touchDotIndex = -1;
+
+    // 上一次是水平拖动还是垂直拖动
+    private int prevHV = STATELESS;
+
+    // 用于使滑动看起来连续的备用点
+    private ImageView backupDot;
+
+    // 一个点的最大滑动距离，限制为 1 格
+    private float MAX_TRANSLATION;
+
     private final int n = 9;
     private final int m = 3;
     private final ImageView[] rings = new ImageView[n];
@@ -38,12 +70,214 @@ public class MainActivity extends AppCompatActivity {
         shapeDotBlue = ResourcesCompat.getDrawable(getResources(), R.drawable.shape_dot_blue, null);
         shapeDotGreen = ResourcesCompat.getDrawable(getResources(), R.drawable.shape_dot_green, null);
 
+        backupDot = findViewById(R.id.backupDot);
+
         // 初始化圈、点对应的数组
         fillRings(rings);
         fillDots(dots);
 
         // 初始化棋盘布置
         fillTables();
+    }
+
+    // 用户交互
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            // 第一次按下按钮
+            case MotionEvent.ACTION_DOWN: {
+                // 更新手指位置
+                prevMotionX = event.getRawX();
+                prevMotionY = event.getRawY();
+
+                // 更新当前状态
+                state = STATE_IDLE;
+                // 判断手指位置是否有点，首先获取手指处的点的下标
+                touchDotIndex = getTouchDotIndex(prevMotionX, prevMotionY);
+
+                if (touchDotIndex != -1) {
+                    state = STATE_WAITING_DRAG;
+                }
+
+                break;
+            }
+            // 手指开始拖动
+            case MotionEvent.ACTION_MOVE: {
+                // 当前手指位置
+                float currentMotionX = event.getRawX();
+                float currentMotionY = event.getRawY();
+
+                // 手指拖动，游戏产生反馈，仅当手指已经按下过，且按下的位置有点，即当前处于等待拖动状态
+                if (state == STATE_WAITING_DRAG) {
+
+                    // 和之前位置的差
+                    float diffX = currentMotionX - prevMotionX;
+                    float diffY = currentMotionY - prevMotionY;
+
+                    // 通过比较 x, y 方向移动的距离，来得到手指是水平移动还是垂直移动
+                    if (Math.abs(diffX) < Math.abs(diffY)) {
+                        // 垂直移动
+                        state = STATE_VERTICAL_DRAG;
+                    } else {
+                        // 水平移动
+                        state = STATE_HORIZONTAL_DRAG;
+                    }
+
+                    // 开始将动作反馈到视图
+                    // 从按下某点，并开始拖动后，直到手指松开，这一行或者一列点都应该在一个轴上移动，水平或垂直
+                    if (prevHV == state || prevHV == STATELESS) {
+                        // 如果本次按下后还没有移动，那么将这次拖动定为标准
+                        prevHV = state;
+
+                        if (state == STATE_HORIZONTAL_DRAG) {
+                            // 水平拖动一行
+                            horizontalDragging(touchDotIndex / 3, diffX);
+                        } else {
+                            // 垂直拖动一列
+                            verticalDragging(touchDotIndex % 3, diffY);
+                        }
+                    }
+                    // 否则这次拖动和本次按下并拖动的标准不同，那这次移动是无效的
+                    // 但是最后的手指位置应该更新
+
+                    // 更新之前位置
+                    prevMotionX = currentMotionX;
+                    prevMotionY = currentMotionY;
+
+                    // 状态改回等待拖动状态
+                    state = STATE_WAITING_DRAG;
+                }
+
+                break;
+            }
+            // 手指抬起
+            case MotionEvent.ACTION_UP: {
+                state = STATE_IDLE;
+                prevHV = STATELESS;
+                break;
+            }
+
+            default:
+        }
+
+        // 事件已经被处理
+        return true;
+    }
+
+    public float getValidTranslation(float translation) {
+        if (MAX_TRANSLATION == 0) {
+            // 2.625*backupDot.getWidth() 就是一个点的宽度加上两个点之间的距离的总长
+            MAX_TRANSLATION = (float)2.625*backupDot.getWidth();
+        }
+        if (translation > MAX_TRANSLATION) {
+            return MAX_TRANSLATION;
+        }
+        return Math.max(translation, -MAX_TRANSLATION);
+    }
+
+    /**
+     * 水平拖动一行点
+     * @param rowNum 将要拖动的行号
+     * @param dist 拖动的距离
+     */
+    public void horizontalDragging(int rowNum, float dist) {
+        // 首先得到这行的三个点
+        ImageView leftDotView = dots[rowNum*3];
+        ImageView midDotView = dots[rowNum*3+1];
+        ImageView rightDotView = dots[rowNum*3+2];
+
+        // 计算要滑动后的相对位置，滑动后的位置最大为初始位置的左右一格内
+        float translationX = getValidTranslation(leftDotView.getTranslationX() + dist);
+
+        // 如果滑动后的位置
+
+        // 开始滑动
+        leftDotView.setTranslationX(translationX);
+        midDotView.setTranslationX(translationX);
+        rightDotView.setTranslationX(translationX);
+
+        // 在边界处补上一个点，看起来左右循环
+        if (translationX > 0) {
+            // 向右滑
+            backupDot.setTranslationX(-(float)2.625*backupDot.getWidth()+translationX);
+
+            backupDot.setTranslationY(rowNum*backupDot.getHeight() + (float)1.625*rowNum*backupDot.getHeight());
+
+            backupDot.setBackground(rightDotView.getBackground());
+        } else {
+            // 向左滑
+            backupDot.setTranslationX(3*backupDot.getWidth()+3*(float)1.625*backupDot.getWidth()+translationX);
+
+            backupDot.setTranslationY(rowNum*backupDot.getHeight() + (float)1.625*rowNum*backupDot.getHeight());
+
+            backupDot.setBackground(leftDotView.getBackground());
+        }
+    }
+
+    /**
+     * 垂直拖动一列点
+     * @param column 将要拖动的列号
+     * @param dist 拖动的距离
+     */
+    public void verticalDragging(int column, float dist) {
+        // 首先得到这列的三个点
+        ImageView topDotView = dots[column];
+        ImageView midDotView = dots[column+3];
+        ImageView bottomDotView = dots[column+6];
+
+        // 计算要滑动的距离
+        float translationY = getValidTranslation(topDotView.getTranslationY() + dist);
+
+        // 开始滑动
+        topDotView.setTranslationY(translationY);
+        midDotView.setTranslationY(translationY);
+        bottomDotView.setTranslationY(translationY);
+
+        // 在边界处补上一个点，看起来左右循环
+        if (translationY > 0) {
+            // 向下滑
+            backupDot.setTranslationY(-(float)2.625*backupDot.getWidth()+translationY);
+
+            backupDot.setTranslationX(column*backupDot.getHeight() + (float)1.625*column*backupDot.getHeight());
+
+            backupDot.setBackground(bottomDotView.getBackground());
+        } else {
+            // 向上滑
+            backupDot.setTranslationY(3*backupDot.getWidth()+3*(float)1.625*backupDot.getWidth()+translationY);
+
+            backupDot.setTranslationX(column*backupDot.getHeight() + (float)1.625*column*backupDot.getHeight());
+
+            backupDot.setBackground(topDotView.getBackground());
+        }
+    }
+
+    // 得到传入坐标所对应的点的下标，如果这个位置上没有点，那么该方法将返回 -1
+    public int getTouchDotIndex(float x, float y) {
+        for (int i = 0; i < n; i++) {
+            ImageView dot = dots[i];
+
+            // 得到视图左上角在屏幕上的位置
+            int[] outLocation = new int[2];
+            dot.getLocationOnScreen(outLocation);
+
+            // 左边界对应于 x 轴的位置
+            int left = outLocation[0];
+
+            // 上边界对应于 y 轴的位置
+            int top = outLocation[1];
+
+            // 进而通过这个视图的宽、高来得到该视图所在的右边、下边
+            int right = left + dot.getWidth();
+            int bottom = top + dot.getHeight();
+
+            // 判断传入位置是否在视图所在矩形内部
+
+            if (x >= left && x <= right && y >= top && y <= bottom) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     // 重新布置棋盘
@@ -98,28 +332,28 @@ public class MainActivity extends AppCompatActivity {
 
     // 获取页面上的圈并依次放入数组
     private void fillRings(ImageView[] rings) {
-        rings[0] = (ImageView) findViewById(R.id.ring1);
-        rings[1] = (ImageView) findViewById(R.id.ring2);
-        rings[2] = (ImageView) findViewById(R.id.ring3);
-        rings[3] = (ImageView) findViewById(R.id.ring4);
-        rings[4] = (ImageView) findViewById(R.id.ring5);
-        rings[5] = (ImageView) findViewById(R.id.ring6);
-        rings[6] = (ImageView) findViewById(R.id.ring7);
-        rings[7] = (ImageView) findViewById(R.id.ring8);
-        rings[8] = (ImageView) findViewById(R.id.ring9);
+        rings[0] = findViewById(R.id.ring1);
+        rings[1] = findViewById(R.id.ring2);
+        rings[2] = findViewById(R.id.ring3);
+        rings[3] = findViewById(R.id.ring4);
+        rings[4] = findViewById(R.id.ring5);
+        rings[5] = findViewById(R.id.ring6);
+        rings[6] = findViewById(R.id.ring7);
+        rings[7] = findViewById(R.id.ring8);
+        rings[8] = findViewById(R.id.ring9);
     }
 
     // 获取页面上的点并依次放入数组
     private void fillDots(ImageView[] dots) {
-        dots[0] = (ImageView) findViewById(R.id.dot1);
-        dots[1] = (ImageView) findViewById(R.id.dot2);
-        dots[2] = (ImageView) findViewById(R.id.dot3);
-        dots[3] = (ImageView) findViewById(R.id.dot4);
-        dots[4] = (ImageView) findViewById(R.id.dot5);
-        dots[5] = (ImageView) findViewById(R.id.dot6);
-        dots[6] = (ImageView) findViewById(R.id.dot7);
-        dots[7] = (ImageView) findViewById(R.id.dot8);
-        dots[8] = (ImageView) findViewById(R.id.dot9);
+        dots[0] = findViewById(R.id.dot1);
+        dots[1] = findViewById(R.id.dot2);
+        dots[2] = findViewById(R.id.dot3);
+        dots[3] = findViewById(R.id.dot4);
+        dots[4] = findViewById(R.id.dot5);
+        dots[5] = findViewById(R.id.dot6);
+        dots[6] = findViewById(R.id.dot7);
+        dots[7] = findViewById(R.id.dot8);
+        dots[8] = findViewById(R.id.dot9);
     }
 
     // 初始化棋盘可能的布置列表，便于置换随机切换布局

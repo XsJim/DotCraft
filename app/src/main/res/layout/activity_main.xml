@@ -143,6 +143,17 @@
         >
 
         <ImageView
+            android:id="@+id/backupDot"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="25dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+
+            android:elevation="10dp"
+            android:outlineAmbientShadowColor="@color/black"
+            android:outlineSpotShadowColor="@color/black" />
+
+        <ImageView
             android:id="@+id/dot1"
             android:layout_width="40dp"
             android:layout_height="40dp"

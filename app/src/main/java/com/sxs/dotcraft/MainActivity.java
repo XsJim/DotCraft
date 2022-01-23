@@ -418,13 +418,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 得到传入坐标所对应的点的下标，如果这个位置上没有点，那么该方法将返回 -1
+    // 2022-1-23 加大判断范围（修改为判断环所在区域），更容易拖动
     public int getTouchDotIndex(float x, float y) {
         for (int i = 0; i < n; i++) {
-            ImageView dot = dots[i];
+            ImageView ring = rings[i];
 
             // 得到视图左上角在屏幕上的位置
             int[] outLocation = new int[2];
-            dot.getLocationOnScreen(outLocation);
+            ring.getLocationOnScreen(outLocation);
 
             // 左边界对应于 x 轴的位置
             int left = outLocation[0];
@@ -433,8 +434,8 @@ public class MainActivity extends AppCompatActivity {
             int top = outLocation[1];
 
             // 进而通过这个视图的宽、高来得到该视图所在的右边、下边
-            int right = left + dot.getWidth();
-            int bottom = top + dot.getHeight();
+            int right = left + ring.getWidth();
+            int bottom = top + ring.getHeight();
 
             // 判断传入位置是否在视图所在矩形内部
 

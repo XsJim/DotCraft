@@ -11,6 +11,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,6 +67,11 @@ public class MainActivity extends AppCompatActivity {
     private Drawable shapeDotBlue;
     private Drawable shapeDotGreen;
 
+    // 用于显分数的文本视图
+    private TextView scoreView;
+    // 用于记录分数的变量
+    private int score;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +82,9 @@ public class MainActivity extends AppCompatActivity {
         shapeDotGreen = ResourcesCompat.getDrawable(getResources(), R.drawable.shape_dot_green, null);
 
         backupDot = findViewById(R.id.backupDot);
+
+        scoreView = findViewById(R.id.score);
+        score = 0;
 
         // 初始化圈、点对应的数组
         fillRings(rings);
@@ -341,12 +350,19 @@ public class MainActivity extends AppCompatActivity {
             // 先来点非常高级的效果
 
             // 加上分数
-
+            scoreUp();
             // 把鸭子变大
 
             // 再来个新的棋盘
             restart(null);
         }
+    }
+
+    public void scoreUp() {
+        score++;
+
+        // 将分数更新到分数视图
+        scoreView.setText(String.valueOf(score));
     }
 
     // 根据当前蓝点的位置记录来更新棋盘

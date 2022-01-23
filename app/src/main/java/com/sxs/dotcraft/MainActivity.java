@@ -47,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
     // 一个点的最大滑动距离，限制为 1 格
     private float MAX_TRANSLATION;
 
+    private static final int MOVE_RIGHT = 0;
+    private static final int MOVE_LEFT = 1;
+    private static final int MOVE_UP = 2;
+    private static final int MOVE_DOWN = 3;
+
     private final int n = 9;
     private final int m = 3;
     private final ImageView[] rings = new ImageView[n];
@@ -129,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
                         // 如果本次按下后还没有移动，那么将这次拖动定为标准
                         prevHV = state;
 
+                        if (backupDot.getVisibility() == View.INVISIBLE) {
+                            backupDot.setVisibility(View.VISIBLE);
+                        }
                         if (state == STATE_HORIZONTAL_DRAG) {
                             // 水平拖动一行
                             horizontalDragging(touchDotIndex / 3, diffX);
@@ -152,6 +160,19 @@ public class MainActivity extends AppCompatActivity {
             }
             // 手指抬起
             case MotionEvent.ACTION_UP: {
+
+                // 水平拖动或者垂直拖动
+                // 首先计算本次拖动据起始点最终的距离
+                // 然后将视图复位到拖动之前
+                // 之后改变实际的棋盘数据
+                // 然后改变视图
+
+                if (prevHV == STATE_HORIZONTAL_DRAG) {
+                    horizontalDragEND(touchDotIndex/3);
+                } else if (prevHV == STATE_VERTICAL_DRAG) {
+                    verticalDragEND(touchDotIndex%3);
+                }
+
                 state = STATE_IDLE;
                 prevHV = STATELESS;
                 break;
@@ -162,6 +183,153 @@ public class MainActivity extends AppCompatActivity {
 
         // 事件已经被处理
         return true;
+    }
+
+    /**
+     * 手指抬起后，进行相关行的数据、视图变更
+     * @param rowNum 被拖动的行号
+     */
+    public void horizontalDragEND(int rowNum) {
+        // 首先得到这行的三个点
+        ImageView leftDotView = dots[rowNum*3];
+        ImageView midDotView = dots[rowNum*3+1];
+        ImageView rightDotView = dots[rowNum*3+2];
+
+        // 得到滑动的距离，这个距离已经被拖动方法进行了限制，只能是左右一格内
+        float translationX = leftDotView.getTranslationX();
+
+        // 点全部回退到原位
+        leftDotView.setTranslationX(0);
+        midDotView.setTranslationX(0);
+        rightDotView.setTranslationX(0);
+
+        backupDot.setTranslationX(0);
+        backupDot.setVisibility(View.INVISIBLE);
+        // 判断滑动距离是否大于格子的一半
+        if (translationX >= (float)2.625*backupDot.getWidth()/2) {
+            // 应该向右滑动
+            // 更新数据和视图
+            updateDots(MOVE_RIGHT, rowNum);
+
+        } else if (translationX <= -(float)2.625*backupDot.getWidth()/2) {
+            // 应该向左滑动
+            // 更新数据和视图
+            updateDots(MOVE_LEFT, rowNum);
+        }
+    }
+
+    /**
+     * 手指抬起后，进行相关列的数据、视图变更
+     * @param column 被拖动的列号
+     */
+    public void verticalDragEND(int column) {
+        // 首先得到这行的三个点
+        ImageView topDotView = dots[column];
+        ImageView midDotView = dots[column+3];
+        ImageView bottomDotView = dots[column+6];
+
+        // 得到滑动的距离，这个距离已经被拖动方法进行了限制，只能是左右一格内
+        float translationY = topDotView.getTranslationY();
+
+        // 点全部回退到原位
+        topDotView.setTranslationY(0);
+        midDotView.setTranslationY(0);
+        bottomDotView.setTranslationY(0);
+
+        backupDot.setTranslationY(0);
+        backupDot.setVisibility(View.INVISIBLE);
+
+        // 判断滑动距离是否大于格子的一半
+        if (translationY >= (float)2.625*backupDot.getWidth()/2) {
+            // 应该向下滑动
+            // 更新数据和视图
+            updateDots(MOVE_DOWN, column);
+
+        } else if (translationY <= -(float)2.625*backupDot.getWidth()/2) {
+            // 应该向上滑动
+            // 更新数据和视图
+            updateDots(MOVE_UP, column);
+        }
+    }
+
+    /**
+     * 给定移动方向及移动的行号或列号，该方法将首先修改数据，然后更新视图
+     * @param move 移动方向
+     * @param num 被移动行的行数或列的列数
+     */
+    public void updateDots(int move, int num) {
+        // 创建一个当前棋盘的映射
+        boolean[] map = new boolean[n];
+
+        for (int i = 0; i < m; i++) {
+            map[currentDotIx[i]] = true;
+        }
+        switch (move) {
+            case MOVE_RIGHT: {
+                boolean a = map[num*3];
+                boolean b = map[num*3+1];
+                boolean c = map[num*3+2];
+
+                map[num*3] = c;
+                map[num*3+1] = a;
+                map[num*3+2] = b;
+
+                break;
+            }
+            case MOVE_LEFT: {
+                boolean a = map[num*3];
+                boolean b = map[num*3+1];
+                boolean c = map[num*3+2];
+
+                map[num*3] = b;
+                map[num*3+1] = c;
+                map[num*3+2] = a;
+                break;
+            }
+            case MOVE_UP: {
+                boolean a = map[num];
+                boolean b = map[num+3];
+                boolean c = map[num+6];
+
+                map[num] = b;
+                map[num+3] = c;
+                map[num+6] = a;
+                break;
+            }
+            case MOVE_DOWN: {
+                boolean a = map[num];
+                boolean b = map[num+3];
+                boolean c = map[num+6];
+
+                map[num] = c;
+                map[num+3] = a;
+                map[num+6] = b;
+                break;
+            }
+        }
+
+        // 更新数据
+        for (int i = 0, j = 0; i < n && j < m; i++) {
+            if (map[i]) {
+                currentDotIx[j++] = i;
+            }
+        }
+
+        // 更新视图
+        updateDotsView();
+    }
+
+    // 根据当前蓝点的位置记录来更新棋盘
+    public void updateDotsView() {
+        // 首先，将棋盘所有点全部变为深色
+        for (int i = 0; i < n; i++) {
+            dots[i].setBackground(shapeDotGreen);
+        }
+
+        // 然后，让蓝色点出现
+        for (int i = 0; i < m; i++) {
+            dots[currentDotIx[i]].setBackground(shapeDotBlue);
+        }
     }
 
     public float getValidTranslation(float translation) {
@@ -188,8 +356,6 @@ public class MainActivity extends AppCompatActivity {
 
         // 计算要滑动后的相对位置，滑动后的位置最大为初始位置的左右一格内
         float translationX = getValidTranslation(leftDotView.getTranslationX() + dist);
-
-        // 如果滑动后的位置
 
         // 开始滑动
         leftDotView.setTranslationX(translationX);

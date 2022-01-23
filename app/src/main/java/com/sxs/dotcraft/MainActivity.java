@@ -83,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
         // 初始化棋盘布置
         fillTables();
+
+        // 打乱棋盘
+        restart(null);
     }
 
     // 用户交互
@@ -182,6 +185,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // 事件已经被处理
+        return true;
+    }
+
+    /**
+     * 判断当前点、环数据是否算是通关
+     * @return 通关则返回 true
+     */
+    public boolean isPass() {
+        // 所有的更新机制，都保证了存放蓝点、环下标的数组是从小到大排列的
+        for (int i = 0; i < m; i++) {
+            if (currentDotIx[i] != currentRingIx[i]) return false;
+        }
+
         return true;
     }
 
@@ -317,6 +333,20 @@ public class MainActivity extends AppCompatActivity {
 
         // 更新视图
         updateDotsView();
+
+        // 判断是否胜利
+        if (isPass()) {
+            // 胜利之后要干啥呢
+
+            // 先来点非常高级的效果
+
+            // 加上分数
+
+            // 把鸭子变大
+
+            // 再来个新的棋盘
+            restart(null);
+        }
     }
 
     // 根据当前蓝点的位置记录来更新棋盘

@@ -3,6 +3,8 @@ package com.sxs.dotcraft;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
@@ -72,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
     // 用于记录分数的变量
     private int score;
 
+    // 用于保存键值对数据的对象
+    private SharedPreferences sharedPref;
+    private SharedPreferences.Editor sharedPrefEdit;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,8 +89,12 @@ public class MainActivity extends AppCompatActivity {
 
         backupDot = findViewById(R.id.backupDot);
 
+        sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        sharedPrefEdit = sharedPref.edit();
+
+        // 加载并显示分数
         scoreView = findViewById(R.id.score);
-        score = 0;
+        setScore(sharedPref.getInt(getString(R.string.saved_high_score_key), 0));
 
         // 初始化圈、点对应的数组
         fillRings(rings);
@@ -195,6 +205,22 @@ public class MainActivity extends AppCompatActivity {
 
         // 事件已经被处理
         return true;
+    }
+
+    /**
+     * 用传入的 score 替代当前的全局 score ，这个方法同时更新视图、并更新持久存储，所有修改 score 都应该使用此方法
+     * @param score 全局 score 的更新目标
+     */
+    public void setScore(int score) {
+        this.score = score;
+
+        // 将分数更新到分数视图
+        scoreView.setText(String.valueOf(score));
+
+        // 将分数更新到内部储存
+
+        sharedPrefEdit.putInt(getString(R.string.saved_high_score_key), score);
+        sharedPrefEdit.commit();
     }
 
     /**
@@ -350,19 +376,12 @@ public class MainActivity extends AppCompatActivity {
             // 先来点非常高级的效果
 
             // 加上分数
-            scoreUp();
+            setScore(score+1);
             // 把鸭子变大
 
             // 再来个新的棋盘
             restart(null);
         }
-    }
-
-    public void scoreUp() {
-        score++;
-
-        // 将分数更新到分数视图
-        scoreView.setText(String.valueOf(score));
     }
 
     // 根据当前蓝点的位置记录来更新棋盘

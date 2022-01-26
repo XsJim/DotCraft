@@ -7,12 +7,24 @@
     android:background="#8abcd1"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/duck"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:background="@mipmap/yellow_duck"
 
+        app:layout_constraintBottom_toTopOf="@id/table1"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+
+        android:onClick="duck"
+        />
 
     <TextView
         android:id="@+id/score"
         android:layout_width="100dp"
         android:layout_height="62dp"
+        android:alpha="0.7"
 
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
@@ -24,15 +36,19 @@
         android:gravity="center"
         android:background="@drawable/shape_bg_red"/>
 
-    <ImageView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:background="@mipmap/yellow_duck"
+    <Button
+        android:id="@+id/clear_score"
+        android:layout_width="60dp"
+        android:layout_height="50dp"
+        android:text="@string/clear_score"
+        android:autoSizeTextType="uniform"
 
+        app:layout_constraintLeft_toRightOf="@id/score"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/table1"
-        app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginEnd="50dp"
-        />
+        android:layout_marginStart="10dp"
+
+        android:onClick="clearScore"/>
 
     <RelativeLayout
         android:id="@+id/table1"
@@ -300,6 +316,9 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/table1"
+
+
+        android:autoSizeTextType="uniform"
 
         android:onClick="restart"
         />

@@ -1,13 +1,20 @@
 package com.sxs.dotcraft;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
+import androidx.dynamicanimation.animation.DynamicAnimation;
+import androidx.dynamicanimation.animation.SpringAnimation;
+import androidx.dynamicanimation.animation.SpringForce;
 
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -78,6 +85,29 @@ public class MainActivity extends AppCompatActivity {
     private SharedPreferences sharedPref;
     private SharedPreferences.Editor sharedPrefEdit;
 
+    // 小鸭子当前的位置
+    private boolean duckAtRight = true;
+
+    // 震动器
+    private Vibrator vibrator;
+
+    // 震动效果
+
+    // 点击
+    private final VibrationEffect effect_click = VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK);
+
+    // 双击
+    private final VibrationEffect effect_double_click = VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK);
+
+    // 重击
+    private final VibrationEffect effect_heavy_click = VibrationEffect.createPredefined(VibrationEffect.EFFECT_HEAVY_CLICK);
+
+    // 轻击
+    private final VibrationEffect effect_tick = VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK);
+
+    // 鸭子
+    private final VibrationEffect effect_duck = VibrationEffect.createWaveform(new long[] {10, 20, 30, 40, 100, 50, 20, 10}, -1);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,8 +119,12 @@ public class MainActivity extends AppCompatActivity {
 
         backupDot = findViewById(R.id.backupDot);
 
+        // 加载键值存储器
         sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         sharedPrefEdit = sharedPref.edit();
+
+        // 初始化震动器
+        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
 
         // 加载并显示分数
         scoreView = findViewById(R.id.score);
@@ -124,6 +158,9 @@ public class MainActivity extends AppCompatActivity {
 
                 if (touchDotIndex != -1) {
                     state = STATE_WAITING_DRAG;
+
+                    // 触发一次点击震动
+                    vibrator.vibrate(effect_click);
                 }
 
                 break;
@@ -207,8 +244,32 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    // 清除分数
+    public void clearScore(View view) {
+        setScore(0);
+
+        // 触发一次双震动
+        vibrator.vibrate(effect_double_click);
+    }
+
+    // 点击小鸭子
+    public void duck(View view) {
+        vibrator.vibrate(effect_duck);
+        ObjectAnimator animation;
+        if (duckAtRight) {
+            animation = ObjectAnimator.ofFloat(view, "translationX", 230);
+        } else {
+            animation = ObjectAnimator.ofFloat(view, "translationX", -230f);
+        }
+
+        duckAtRight = !duckAtRight;
+
+        animation.setDuration(500);
+        animation.start();
+    }
+
     /**
-     * 用传入的 score 替代当前的全局 score ，这个方法同时更新视图、并更新持久存储，所有修改 score 都应该使用此方法
+     * 用传入的 score 替代当前的全局 score ，这个方法同时更新视图、并更新持久存储以及其他于分数相关联的内容，所有修改 score 都应该使用此方法
      * @param score 全局 score 的更新目标
      */
     public void setScore(int score) {
@@ -369,15 +430,19 @@ public class MainActivity extends AppCompatActivity {
         // 更新视图
         updateDotsView();
 
+        // 移动之后来个小型震动效果
+        vibrator.vibrate(effect_tick);
+
         // 判断是否胜利
         if (isPass()) {
             // 胜利之后要干啥呢
 
             // 先来点非常高级的效果
+            // 一次加重的点击震动
+            vibrator.vibrate(effect_heavy_click);
 
             // 加上分数
             setScore(score+1);
-            // 把鸭子变大
 
             // 再来个新的棋盘
             restart(null);
@@ -560,6 +625,9 @@ public class MainActivity extends AppCompatActivity {
             // 将新位置的点变为浅色
             dots[currentDotIx[i]].setBackground(shapeDotBlue);
         }
+
+        // 更新棋盘后来两次震动
+        vibrator.vibrate(effect_double_click);
     }
 
     // 获取页面上的圈并依次放入数组
